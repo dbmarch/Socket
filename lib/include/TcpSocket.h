@@ -12,13 +12,13 @@ public:
 
   virtual ~TcpSocket();
 
-  int Connect( const char* ipAddr, uint16_t port);
+  int Connect( std::string ipAddr, std::string port);
 
   int Connect( uint16_t port);
   
   TcpSocket* Accept();
 
-  int Bind (in_addr_t ipAddr, uint16_t port);
+  int Bind (std::string ipAddr, std::string port);
 
   int Listen (int backlog) ;
   

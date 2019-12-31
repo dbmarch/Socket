@@ -2,17 +2,17 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/socket.h> 
-
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #include "Socket.h"
 
 
 //*****************************************************
 // Socket::Socket
 //*****************************************************
-Socket::Socket(int domain, int type) :
-  mDomain(domain),
-  mType (type)
-{
+Socket::Socket(int family, int type) :
+  mFamily(family), mType (type) {
   printf ("%s\n", __func__);
 }
 
@@ -20,36 +20,30 @@ Socket::Socket(int domain, int type) :
 //*****************************************************
 // Socket::Socket
 //*****************************************************
-Socket::Socket (const Socket& sock) 
-{
+Socket::Socket (const Socket& sock) {
   sockId = sock.sockId;
-
-  mDomain = sock.mDomain;
-
+  mFamily = sock.mFamily;
   mType = sock.mType;
 }
 
 //*****************************************************
 // Socket::~Socket
 //*****************************************************
-Socket::~Socket()
-{
+Socket::~Socket() {
   printf ("%s\n", __func__);
 }
 
 //*****************************************************
 // Socket::Open
 //*****************************************************
-int Socket::Open(void)
-{	
+int Socket::Open(void) {	
   printf ("%s\n", __func__);
-  sockId = socket(mDomain, mType, 0);
+  sockId = socket(mFamily, mType, 0);
   if (sockId < 0) 
     return sockId;
 
   int optVal = 1;
-  if (setsockopt(sockId, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof (int)) < 0 ) //You can reuse the address and the port
-  {
+  if (setsockopt(sockId, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof (int)) < 0 ) { //You can reuse the address and the port
     printf ("set socket option failed %s\n", strerror(errno));
   }
 
@@ -60,17 +54,17 @@ int Socket::Open(void)
 //*****************************************************
 // Socket::Close
 //*****************************************************
-int Socket::Close(void)
-{	
-  return 0;
+int Socket::Close(void) {	
+  int closeId {sockId};
+  sockId = -1;
+  return close(closeId);  // shutdown is preferred..
 }
 
 
 //*****************************************************
-// Socket::Shutdown
+// Socket::Shutdown 
 //*****************************************************
-int Socket::Shutdown(int how)
-{	
+int Socket::Shutdown(int how) {	
   return shutdown(sockId, how);
 }
 
@@ -78,16 +72,14 @@ int Socket::Shutdown(int how)
 //*****************************************************
 // Socket::Recv
 //*****************************************************
-int Socket::Recv (uint8_t * buf , size_t len)
-{	
+int Socket::Recv (uint8_t * buf , size_t len) {	
   return recv (sockId, buf, len, 0);
 }
 
 //*****************************************************
 // Socket::Send
 //*****************************************************
-int Socket::Send (uint8_t * buf , size_t len)
-{
+int Socket::Send (uint8_t * buf , size_t len) {
    int status = send(sockId, buf, len, 0);
     if (status < 0) {
         printf("recv error: %s\n", strerror(errno));
@@ -95,3 +87,73 @@ int Socket::Send (uint8_t * buf , size_t len)
   return status;
 }
 
+
+//*****************************************************
+// Socket::GetIpString
+//*****************************************************
+std::string Socket::GetIpString (const struct sockaddr * sa) {
+  char ipBuf[INET_ADDRSTRLEN];
+  std::string result{};
+  switch (sa->sa_family)   {
+    case AF_INET:
+       inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),ipBuf, sizeof(ipBuf));
+       result = std::string(ipBuf) + std::string(":") + std::to_string(htons(((struct sockaddr_in *)sa)->sin_port));
+       break;
+
+    case AF_INET6:
+       inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr),ipBuf, sizeof(ipBuf));
+       result = std::string(ipBuf) + std::string(":") + std::to_string(htons(((struct sockaddr_in6 *)sa)->sin6_port));
+       break;
+
+    default:
+      result = std::string("???");
+  }
+  return result;
+}
+
+//*****************************************************
+// Socket::GetIpString
+//*****************************************************
+std::string Socket::Family(int otherFamily) {
+  int family = otherFamily == -1 ? mFamily : otherFamily;
+  switch (family)   {
+    case AF_INET:  return std::string ("AF_INET");
+    case AF_INET6: return std::string ("AF_INET6");
+    case AF_LOCAL: return std::string ("AF_LOCAL");
+    default:       return std::string ("AF_???");
+  }
+  return std::string ("???");
+}
+
+
+//*****************************************************
+// Socket::GetIpString
+//*****************************************************
+std::string Socket::Type(int otherType) {
+  int type = otherType == -1 ? mType : otherType;
+  switch (type)   {
+    case SOCK_STREAM: return std::string ("SOCK_STREAM");
+    case SOCK_DGRAM:  return std::string ("SOCK_DGRAM");
+    case SOCK_RAW:    return std::string ("SOCK_RAW");
+    default:          return std::string ("SOCK_???");
+  }
+  return std::string ("???");
+}
+
+
+//*****************************************************
+// Socket::GetIpString
+//*****************************************************
+std::string Socket::Protocol(int protocol) {
+  switch (protocol) {
+    case IPPROTO_IP:    return std::string ("IPPROTO_IP");
+    case IPPROTO_ICMP:  return std::string ("IPPROTO_ICMP");
+    case IPPROTO_IGMP:  return std::string ("IPPROTO_IGMP");
+    case IPPROTO_TCP:   return std::string ("IPPROTO_TCP");
+    case IPPROTO_UDP:   return std::string ("IPPROTO_UDP");
+    case IPPROTO_IPV6:  return std::string ("IPPROTO_IPV6");
+    case IPPROTO_RAW:   return std::string ("IPPROTO_RAW");
+    default:            return std::string ("IPPROTO_???");
+  }
+  return std::string ("???");
+}
