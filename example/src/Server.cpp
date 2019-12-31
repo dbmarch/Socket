@@ -1,3 +1,4 @@
+#include <string>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -41,6 +42,8 @@ int main() {
          buffer[rval] = 0;
          printf("received: %s\n", buffer);
        }
+       std::string serverMessage= std::string ("Received your message: ") + std::string ("'") + std::string((char*) buffer) + std::string ("'");
+       newSocket->Send((uint8_t*) serverMessage.c_str(), serverMessage.length());
     }
   } else {
     printf ("Accept failed %s\n" , strerror(errno));
