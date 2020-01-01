@@ -15,12 +15,9 @@ public:
   virtual int Open ( void) ;
   virtual int Close( void ); 
 
-  virtual int Recv (uint8_t * buf , size_t len);
-  virtual int Send (uint8_t * buf , size_t len);
-
   /* 
   * ShutDown
-  * @param how   (SHUT_RD, SHUT_WR, SHUT_RDWR)
+  * @param how   SHUT_RD, SHUT_WR, SHUT_RDWR
   */
   virtual int Shutdown ( int how );
 
@@ -28,7 +25,7 @@ public:
   int GetSockOpt (int level, int optname, void * optval, socklen_t *optlen);
 
 
-  std::string GetIpString (const struct sockaddr * sa);
+  std::string IpToString (const struct sockaddr * sa);
   std::string Family(int family = -1);   // default to our socket family
   std::string Type(int type = -1 );      // default to our socket type
   std::string Protocol(int protocol );

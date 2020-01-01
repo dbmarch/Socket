@@ -23,11 +23,11 @@ public:
 
   int Listen (int backlog) ;
   
-  int Recv( uint8_t * buf, size_t len) { return Socket::Recv(buf,len);}
+  int Recv( uint8_t * buf, size_t len);
 
-  int Send( uint8_t * buf, size_t len) { return Socket::Send(buf,len);}
+  int Send( const uint8_t * buf, size_t len);
 
-  int Send(std::string msg);
+  int Send(const std::string msg);
 
 protected:
 

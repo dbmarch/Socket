@@ -68,24 +68,6 @@ int Socket::Shutdown(int how) {
   return shutdown(sockId, how);
 }
 
-//*****************************************************
-// Socket::Recv
-//*****************************************************
-int Socket::Recv (uint8_t * buf , size_t len) {	
-  return recv (sockId, buf, len, 0);
-}
-
-//*****************************************************
-// Socket::Send
-//*****************************************************
-int Socket::Send (uint8_t * buf , size_t len) {
-   int status = send(sockId, buf, len, 0);
-    if (status < 0) {
-        printf("%s error: %s\n", __func__,strerror(errno));
-    }
-  return status;
-}
-
 
 //*****************************************************
 // Socket::SetSockOpt
@@ -111,9 +93,9 @@ int Socket::GetSockOpt (int level, int optname, void* optval, socklen_t *optlen)
 
 
 //*****************************************************
-// Socket::GetIpString
+// Socket::IpToString
 //*****************************************************
-std::string Socket::GetIpString (const struct sockaddr * sa) {
+std::string Socket::IpToString (const struct sockaddr * sa) {
   char ipBuf[INET_ADDRSTRLEN];
   std::string result{};
   switch (sa->sa_family)   {
@@ -138,7 +120,7 @@ std::string Socket::GetIpString (const struct sockaddr * sa) {
 }
 
 //*****************************************************
-// Socket::GetIpString
+// Socket::Family
 //*****************************************************
 std::string Socket::Family(int otherFamily) {
   int family = otherFamily == -1 ? mFamily : otherFamily;
@@ -153,7 +135,7 @@ std::string Socket::Family(int otherFamily) {
 
 
 //*****************************************************
-// Socket::GetIpString
+// Socket::Type
 //*****************************************************
 std::string Socket::Type(int otherType) {
   int type = otherType == -1 ? mType : otherType;
@@ -168,7 +150,7 @@ std::string Socket::Type(int otherType) {
 
 
 //*****************************************************
-// Socket::GetIpString
+// Socket::Protocol
 //*****************************************************
 std::string Socket::Protocol(int protocol) {
   switch (protocol) {

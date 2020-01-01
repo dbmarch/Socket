@@ -60,7 +60,7 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
       struct addrinfo *rp;
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           printf("IP:%s %s %s %s\n", 
-               GetIpString(rp->ai_addr).c_str(),
+               IpToString(rp->ai_addr).c_str(),
                Family(rp->ai_family).c_str(), 
                Type(rp->ai_socktype).c_str(), 
                Protocol(rp->ai_protocol).c_str()
@@ -97,7 +97,7 @@ int TcpSocket::Connect( uint16_t port) {
 
 
   if (connect(sockId, ( struct sockaddr *)&server , sizeof(server)) < 0) {
-    printf ("Error Connecting %s\n", strerror(errno));
+    printf ("%s failed: %s\n", __func__, strerror(errno));
     return -1;
   }
   return 0;
@@ -128,7 +128,7 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
       struct addrinfo *rp;
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           printf("IP:%s %s %s %s\n", 
-               GetIpString(rp->ai_addr).c_str(),
+               IpToString(rp->ai_addr).c_str(),
                Family(rp->ai_family).c_str(), 
                Type(rp->ai_socktype).c_str(), 
                Protocol(rp->ai_protocol).c_str()
@@ -142,7 +142,7 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
    freeaddrinfo(result);
 
   if (connect(sockId, server.ai_addr, server.ai_addrlen) < 0) {
-    printf ("Connect failed: %s\n", strerror(errno));
+    printf ("%s failed: %s\n", __func__, strerror(errno));
     return -1;
   }
   return 0;
@@ -169,7 +169,7 @@ TcpSocket* TcpSocket::Accept (void) {
   TcpSocket *sock = new TcpSocket(*this);
   sock->AcceptedSocket(newSocket);
 
-  printf ("Connected to %s\n", GetIpString(&peer_addr).c_str());
+  printf ("Connected to %s\n", IpToString(&peer_addr).c_str());
   return sock ;
  }
 
@@ -179,7 +179,7 @@ TcpSocket* TcpSocket::Accept (void) {
 // TcpSocket::GetPeerAddr
 //*****************************************************
 std::string TcpSocket::GetPeerAddr() {
-  return GetIpString(&peer_addr);
+  return IpToString(&peer_addr);
 }
 
 
@@ -187,7 +187,7 @@ std::string TcpSocket::GetPeerAddr() {
 //*****************************************************
 // TcpSocket::Send
 //*****************************************************
-int TcpSocket::Send(std::string msg) {
+int TcpSocket::Send(const std::string msg) {
   uint8_t* pMsg = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(msg.c_str()));
   return Send(pMsg, msg.length());
 }
@@ -201,3 +201,27 @@ int TcpSocket::Send(std::string msg) {
 void TcpSocket::AcceptedSocket(int acceptedId) {
   sockId = acceptedId;
 }
+
+  //*****************************************************
+// TcpSocket::Recv
+//*****************************************************
+int TcpSocket::Recv( uint8_t * buf, size_t len) { 
+  int status = recv (sockId, buf, len, 0);
+   if (status < 0) {
+        printf("%s error: %s\n", __func__,strerror(errno));
+    }
+   return (status);
+}
+
+//*****************************************************
+// TcpSocket::Send
+//*****************************************************
+int TcpSocket::Send( const uint8_t * buf, size_t len) { 
+  int status = send (sockId, buf, len, 0);
+   if (status < 0) {
+        printf("%s error: %s\n", __func__,strerror(errno));
+    }
+   return (status);
+
+}
+
