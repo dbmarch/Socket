@@ -20,6 +20,11 @@ Server
   It expects a client to connecdt, sent a message and it will reply back with the message
   It will close that new socket once the client shuts down and then go back and accept again.
 
+Server3
+  Launches Receive threads from accept threads.  
+  2 accept threads launched.   
+  Looking at how to scale a socket spawing with receive handlers.
+
 Client
   Connect to the test servers
 

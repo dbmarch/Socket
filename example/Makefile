@@ -2,18 +2,19 @@
 CC          := g++
 AR          := ar
 
-SERVER_EXE  := Server
 CLIENT_EXE  := Client
+
+SERVER_EXE  := Server
 SERVER2_EXE := Server2
+SERVER3_EXE := Server3
 
-TARGET      := $(SERVER_EXE) $(CLIENT_EXE) $(SERVER2_EXE)
-
-
-OBJ_SERVER  := obj/Server.o
+TARGET      := $(SERVER_EXE) $(CLIENT_EXE) $(SERVER2_EXE) $(SERVER3_EXE)
 
 OBJ_CLIENT  := obj/Client.o
 
+OBJ_SERVER  := obj/Server.o
 OBJ_SERVER2  := obj/Server2.o
+OBJ_SERVER3  := obj/Server3.o
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := src
@@ -72,6 +73,9 @@ $(CLIENT_EXE): $(OBJECTS)
 
 $(SERVER2_EXE): $(OBJECTS)
 	$(CC) -o $(TARGETDIR)/$(SERVER2_EXE) $(OBJ_SERVER2) $(LIB)
+
+$(SERVER3_EXE): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(SERVER3_EXE) $(OBJ_SERVER3) $(LIB)
 
 
 
