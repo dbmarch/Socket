@@ -1,0 +1,27 @@
+# Socket Classes
+
+Socket classes which provide same behavior as the linux calls 
+They handle
+  Remembering socket parameters
+  Provide the glue for the various addressing
+
+
+Examples
+
+Server  
+  This will just open a TCP socket, listen , accept
+  It expects a client to connecdt, sent a message and it will reply back with the message
+  It will close once the client shuts down
+
+ Server2
+  This will just open a TCP socket, listen  and launch a thread for accept
+
+  The accept thread will loop through this behavior:
+  It expects a client to connecdt, sent a message and it will reply back with the message
+  It will close that new socket once the client shuts down and then go back and accept again.
+
+Client
+  Connect to the test servers
+
+  Sends message, receives message and exits
+

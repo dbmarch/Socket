@@ -6,6 +6,9 @@
 
 #include <arpa/inet.h>
 
+//*****************************************************
+// main
+//*****************************************************
 int main() {
   TcpSocket sock;
   std::string myAddr("localhost");

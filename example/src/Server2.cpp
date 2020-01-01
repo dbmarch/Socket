@@ -8,9 +8,13 @@
 
 #include <arpa/inet.h>
 
+
 static void AcceptThread(TcpSocket &listenSocket);
 
 
+//*****************************************************
+// main
+//*****************************************************
 int main() {
   TcpSocket listenSocket;
   std::string myAddr("localhost");
@@ -35,6 +39,9 @@ int main() {
   return 0;
 }
 
+//*****************************************************
+// AcceptThread
+//*****************************************************
 void AcceptThread( TcpSocket &listenSocket) {
   printf ("AcceptThread started...\n");
   while (1)
