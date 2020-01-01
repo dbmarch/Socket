@@ -9,7 +9,6 @@
 int main() {
   TcpSocket sock;
   std::string myAddr("localhost");
-  // std::string myAddr("192.168.0.147");
   std::string port("8888");
   printf ("Server\n");
 

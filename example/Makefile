@@ -4,13 +4,16 @@ AR          := ar
 
 SERVER_EXE  := Server
 CLIENT_EXE  := Client
+SERVER2_EXE := Server2
 
-TARGET      := $(SERVER_EXE) $(CLIENT_EXE)
+TARGET      := $(SERVER_EXE) $(CLIENT_EXE) $(SERVER2_EXE)
+
 
 OBJ_SERVER  := obj/Server.o
 
 OBJ_CLIENT  := obj/Client.o
 
+OBJ_SERVER2  := obj/Server2.o
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := src
@@ -66,7 +69,11 @@ $(SERVER_EXE): $(OBJECTS)
 
 $(CLIENT_EXE): $(OBJECTS)
 	$(CC) -o $(TARGETDIR)/$(CLIENT_EXE) $(OBJ_CLIENT) $(LIB)
-	
+
+$(SERVER2_EXE): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(SERVER2_EXE) $(OBJ_SERVER2) $(LIB)
+
+
 
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
