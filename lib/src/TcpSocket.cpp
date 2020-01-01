@@ -53,7 +53,7 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
    int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &server, &result);
    if (status != 0) {
       fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
-      return 1;
+      return -1;
    } else {
       struct addrinfo *rp;
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
@@ -121,7 +121,7 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
    int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &server, &result);
    if (status != 0) {
       fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
-      return 1;
+      return -1;
    } else {
       struct addrinfo *rp;
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
@@ -206,7 +206,7 @@ int TcpSocket::Recv( char * buf, size_t len) {
 int TcpSocket::Recv( uint8_t * buf, size_t len) { 
   int status = recv (sockId, buf, len, 0);
    if (status < 0) {
-        printf("%s error: %s\n", __func__,strerror(errno));
+        fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
    return (status);
 }
@@ -225,7 +225,7 @@ int TcpSocket::Send( const char * buf, size_t len) {
 int TcpSocket::Send( const uint8_t * buf, size_t len) { 
   int status = send (sockId, buf, len, 0);
    if (status < 0) {
-        printf("%s error: %s\n", __func__,strerror(errno));
+        fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
    return (status);
 }

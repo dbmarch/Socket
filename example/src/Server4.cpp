@@ -64,8 +64,6 @@ class MessageHandler {
  }
 
  private:
-    std::mutex mutex;
-    std::vector<std::string> messageQueue;
 };
 
 
