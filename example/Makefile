@@ -7,14 +7,21 @@ CLIENT_EXE  := Client
 SERVER_EXE  := Server
 SERVER2_EXE := Server2
 SERVER3_EXE := Server3
+SERVER4_EXE := Server4
 
-TARGET      := $(SERVER_EXE) $(CLIENT_EXE) $(SERVER2_EXE) $(SERVER3_EXE)
+TARGET      :=   \
+	$(CLIENT_EXE)  \
+	$(SERVER_EXE)  \
+	$(SERVER2_EXE) \
+	$(SERVER3_EXE) \
+	$(SERVER4_EXE)
 
 OBJ_CLIENT  := obj/Client.o
 
-OBJ_SERVER  := obj/Server.o
+OBJ_SERVER   := obj/Server.o
 OBJ_SERVER2  := obj/Server2.o
 OBJ_SERVER3  := obj/Server3.o
+OBJ_SERVER4  := obj/Server4.o
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := src
@@ -76,6 +83,9 @@ $(SERVER2_EXE): $(OBJECTS)
 
 $(SERVER3_EXE): $(OBJECTS)
 	$(CC) -o $(TARGETDIR)/$(SERVER3_EXE) $(OBJ_SERVER3) $(LIB)
+
+$(SERVER4_EXE): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(SERVER4_EXE) $(OBJ_SERVER4) $(LIB)
 
 
 

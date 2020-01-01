@@ -25,6 +25,9 @@ Server3
   2 accept threads launched.   
   Looking at how to scale a socket spawing with receive handlers.
 
+Server4 
+  A class launches an accept thread and receive thread.
+  
 Client
   Connect to the test servers
 

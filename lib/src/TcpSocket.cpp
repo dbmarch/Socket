@@ -16,12 +16,14 @@
 TcpSocket::TcpSocket() :  Socket(AF_INET, SOCK_STREAM) {
   printf ("%s\n", __func__);
   Socket::Open();
+  peer_addr.sa_family = AF_UNSPEC;
 }
 
 //*****************************************************
 // TcpSocket::TcpSocket
 //*****************************************************
 TcpSocket::TcpSocket (const TcpSocket& sock) :  Socket(sock) {
+  peer_addr = sock.peer_addr;
 }
 
 //*****************************************************
@@ -151,7 +153,6 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
 // TcpSocket::Accept
 //*****************************************************
 TcpSocket* TcpSocket::Accept (void) {
-  struct sockaddr peer_addr;
   socklen_t peer_addr_size;
 
   printf ("%s \n", __func__);
@@ -169,9 +170,17 @@ TcpSocket* TcpSocket::Accept (void) {
   sock->AcceptedSocket(newSocket);
 
   printf ("Connected to %s\n", GetIpString(&peer_addr).c_str());
-
   return sock ;
  }
+
+
+
+//*****************************************************
+// TcpSocket::GetPeerAddr
+//*****************************************************
+std::string TcpSocket::GetPeerAddr() {
+  return GetIpString(&peer_addr);
+}
 
 
 

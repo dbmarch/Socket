@@ -17,6 +17,7 @@ public:
   int Connect( uint16_t port);
   
   TcpSocket* Accept();
+  std::string GetPeerAddr();
 
   int Bind (std::string ipAddr, std::string port);
 
@@ -32,7 +33,8 @@ protected:
 
   void AcceptedSocket(int sockId);
 
-  
+  struct sockaddr peer_addr;
+
 };
 
 #endif

@@ -33,6 +33,9 @@ int main() {
     return 1;
   }
 
+  // typically one would use select on the listen socket.  Then we would spawn new threads.
+  // This code probably breaks when both threads exit at the same time and we attempt to accept on both threads.
+  
   std::thread accept1 (AcceptThread, std::string("1"), std::ref(listenSocket), std::ref(ReceiveThread));
   std::thread accept2 (AcceptThread, std::string("2"), std::ref(listenSocket), std::ref(ReceiveThread));
 
@@ -67,7 +70,7 @@ void AcceptThread( std::string name, TcpSocket &listenSocket, ReceiveFunction re
 
 
 //*****************************************************
-// AcceptThread
+// ReceiveThread
 //*****************************************************
 void ReceiveThread (TcpSocket &newSocket) {
   printf ("Receive Thread started\n");

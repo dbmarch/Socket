@@ -24,6 +24,10 @@ public:
   */
   virtual int Shutdown ( int how );
 
+  int SetSockOpt (int level, int optname, const void* optval, socklen_t optlen);
+  int GetSockOpt (int level, int optname, void * optval, socklen_t *optlen);
+
+
   std::string GetIpString (const struct sockaddr * sa);
   std::string Family(int family = -1);   // default to our socket family
   std::string Type(int type = -1 );      // default to our socket type
