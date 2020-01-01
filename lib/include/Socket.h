@@ -15,6 +15,8 @@ public:
   virtual int Open ( void) ;
   virtual int Close( void ); 
 
+  virtual void EnableDebug(bool enableIt);
+
   /* 
   * ShutDown
   * @param how   SHUT_RD, SHUT_WR, SHUT_RDWR
@@ -33,9 +35,11 @@ public:
   protected:
     int sockId{-1};
 
-    int mFamily;
+    int mFamily{AF_INET};
 
-    int mType;
+    int mType{SOCK_RAW};
+
+    bool mDebug{false};
 };
 
 #endif

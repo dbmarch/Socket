@@ -14,7 +14,7 @@
 // TcpSocket::TcpSocket
 //*****************************************************
 TcpSocket::TcpSocket() :  Socket(AF_INET, SOCK_STREAM) {
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
   Socket::Open();
   peer_addr.sa_family = AF_UNSPEC;
 }
@@ -30,16 +30,14 @@ TcpSocket::TcpSocket (const TcpSocket& sock) :  Socket(sock) {
 // TcpSocket::~TcpSocket
 //*****************************************************
 TcpSocket::~TcpSocket() {
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
 }
-
-
 
 //*****************************************************
 // TcpSocket::Bind
 //*****************************************************
 int TcpSocket::Bind(std::string ipAddr, std::string port) {
-   printf ("%s\n", __func__);
+   if (mDebug) printf ("%s\n", __func__);
    struct addrinfo *result;
    struct addrinfo server;
 
@@ -54,12 +52,12 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
   
    int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &server, &result);
    if (status != 0) {
-      printf("getaddrinfo: %s\n", gai_strerror(status));
+      fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
       return 1;
    } else {
       struct addrinfo *rp;
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
-          printf("IP:%s %s %s %s\n", 
+          printf("BIND IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
                Family(rp->ai_family).c_str(), 
                Type(rp->ai_socktype).c_str(), 
@@ -80,7 +78,7 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
 // TcpSocket::Listen
 //*****************************************************
 int TcpSocket::Listen (int backlog) {
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
   return listen(sockId, backlog);
 }
 
@@ -88,7 +86,7 @@ int TcpSocket::Listen (int backlog) {
 // TcpSocket::Connect
 //*****************************************************
 int TcpSocket::Connect( uint16_t port) {
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
   struct sockaddr_in server;
 
   server.sin_addr.s_addr = INADDR_ANY;
@@ -97,7 +95,7 @@ int TcpSocket::Connect( uint16_t port) {
 
 
   if (connect(sockId, ( struct sockaddr *)&server , sizeof(server)) < 0) {
-    printf ("%s failed: %s\n", __func__, strerror(errno));
+    fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
     return -1;
   }
   return 0;
@@ -107,7 +105,7 @@ int TcpSocket::Connect( uint16_t port) {
 // TcpSocket::Connect
 //*****************************************************
 int TcpSocket::Connect(std::string ipAddr, std::string port) {	
-   printf ("%s\n", __func__);
+   if (mDebug) printf ("%s\n", __func__);
    struct addrinfo *result;
    struct addrinfo server;
    
@@ -122,12 +120,12 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
   
    int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &server, &result);
    if (status != 0) {
-      printf("getaddrinfo: %s\n", gai_strerror(status));
+      fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
       return 1;
    } else {
       struct addrinfo *rp;
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
-          printf("IP:%s %s %s %s\n", 
+          printf("CONNECT IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
                Family(rp->ai_family).c_str(), 
                Type(rp->ai_socktype).c_str(), 
@@ -142,7 +140,7 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
    freeaddrinfo(result);
 
   if (connect(sockId, server.ai_addr, server.ai_addrlen) < 0) {
-    printf ("%s failed: %s\n", __func__, strerror(errno));
+    fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
     return -1;
   }
   return 0;
@@ -155,14 +153,14 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
 TcpSocket* TcpSocket::Accept (void) {
   socklen_t peer_addr_size;
 
-  printf ("%s \n", __func__);
+  if (mDebug) printf ("%s \n", __func__);
 
   peer_addr_size = sizeof(struct sockaddr);
   int newSocket = accept(sockId, &peer_addr, &peer_addr_size);
 
   if (newSocket == -1)
   {
-    printf ("accept error %s\n", strerror(errno));
+    fprintf (stderr, "accept error %s\n", strerror(errno));
     return nullptr;
   }
 
@@ -184,14 +182,6 @@ std::string TcpSocket::GetPeerAddr() {
 
 
 
-//*****************************************************
-// TcpSocket::Send
-//*****************************************************
-int TcpSocket::Send(const std::string msg) {
-  uint8_t* pMsg = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(msg.c_str()));
-  return Send(pMsg, msg.length());
-}
-
 
 
 
@@ -202,7 +192,15 @@ void TcpSocket::AcceptedSocket(int acceptedId) {
   sockId = acceptedId;
 }
 
-  //*****************************************************
+
+//*****************************************************
+// TcpSocket::Recv
+//*****************************************************
+int TcpSocket::Recv( char * buf, size_t len) { 
+   return Recv( reinterpret_cast<uint8_t*>(buf), len);
+}
+
+//*****************************************************
 // TcpSocket::Recv
 //*****************************************************
 int TcpSocket::Recv( uint8_t * buf, size_t len) { 
@@ -211,6 +209,14 @@ int TcpSocket::Recv( uint8_t * buf, size_t len) {
         printf("%s error: %s\n", __func__,strerror(errno));
     }
    return (status);
+}
+
+
+//*****************************************************
+// TcpSocket::Send
+//*****************************************************
+int TcpSocket::Send( const char * buf, size_t len) { 
+  return Send(reinterpret_cast<const uint8_t*>(buf), len);
 }
 
 //*****************************************************
@@ -222,6 +228,14 @@ int TcpSocket::Send( const uint8_t * buf, size_t len) {
         printf("%s error: %s\n", __func__,strerror(errno));
     }
    return (status);
-
 }
+
+//*****************************************************
+// TcpSocket::Send
+//*****************************************************
+int TcpSocket::Send(const std::string msg) {
+  uint8_t* pMsg = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(msg.c_str()));
+  return Send(pMsg, msg.length());
+}
+
 

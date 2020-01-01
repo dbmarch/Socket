@@ -24,11 +24,13 @@ public:
   int Listen (int backlog) ;
   
   int Recv( uint8_t * buf, size_t len);
+  int Recv( char * buf, size_t len);
 
   int Send( const uint8_t * buf, size_t len);
-
+  int Send( const char*  buf, size_t len);
   int Send(const std::string msg);
 
+  void EnableDebug (bool enableIt) { Socket::EnableDebug(enableIt); }
 protected:
 
   void AcceptedSocket(int sockId);

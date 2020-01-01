@@ -13,7 +13,7 @@
 //*****************************************************
 Socket::Socket(int family, int type) :
   mFamily(family), mType (type) {
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
 }
 
 
@@ -30,21 +30,22 @@ Socket::Socket (const Socket& sock) {
 // Socket::~Socket
 //*****************************************************
 Socket::~Socket() {
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
+  Close();    // Make sure its closed
 }
 
 //*****************************************************
 // Socket::Open
 //*****************************************************
 int Socket::Open(void) {	
-  printf ("%s\n", __func__);
+  if (mDebug) printf ("%s\n", __func__);
   sockId = socket(mFamily, mType, 0);
   if (sockId < 0) 
     return sockId;
 
   int optVal = 1;
   if (setsockopt(sockId, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof (int)) < 0 ) { //You can reuse the address and the port
-    printf ("set socket option failed %s\n", strerror(errno));
+    fprintf (stderr,"set socket option failed %s\n", strerror(errno));
   }
 
   return 0;
@@ -56,8 +57,11 @@ int Socket::Open(void) {
 //*****************************************************
 int Socket::Close(void) {	
   int closeId {sockId};
-  sockId = -1;
-  return close(closeId);  // shutdown is preferred..
+  if (sockId != -1) {
+    sockId = -1;
+    return close(closeId);  // shutdown is preferred..
+  }
+  return 0;
 }
 
 
@@ -70,12 +74,20 @@ int Socket::Shutdown(int how) {
 
 
 //*****************************************************
+// Socket::EnableDebug
+//*****************************************************
+void Socket::EnableDebug(bool enableIt) { 
+  mDebug = enableIt; 
+ };
+  
+
+//*****************************************************
 // Socket::SetSockOpt
 //*****************************************************
 int Socket::SetSockOpt (int level, int optname, const void* optval, socklen_t optlen) {
     int status = setsockopt (sockId, level, optname, optval, optlen);
     if (status < 0) {
-        printf("%s error: %s\n", __func__,strerror(errno));
+        fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
   return status;
 }
@@ -86,7 +98,7 @@ int Socket::SetSockOpt (int level, int optname, const void* optval, socklen_t op
 int Socket::GetSockOpt (int level, int optname, void* optval, socklen_t *optlen) {
     int status = getsockopt (sockId, level, optname, optval, optlen);
     if (status < 0) {
-        printf("%s error: %s\n", __func__,strerror(errno));
+        fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
   return status;
 }
