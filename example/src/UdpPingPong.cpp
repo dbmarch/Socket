@@ -82,11 +82,9 @@ public:
         counter++;
         timeoutCounter = 100;
       }
-
-      }
-
     }
   }
+}
 
  void RunPingPongTest(UdpSocket &udpSocket) {
     std::thread receive (&PingPongTest::ReceiveThread, this,  std::ref(udpSocket));
@@ -148,45 +146,3 @@ void UdpServerThread (UdpSocket &udpSocket) {
   }
   printf ("Ping Thread Exiting\n");
 }
-
-  // std::string msg = "stop";
-  // udpSocket.SendTo (msg.c_str(), msg.size(), ipAddr, sendToPort);
-  // udpSocket.Shutdown(SHUT_RDWR);
-
-// //*****************************************************
-// // PongThread
-// //*****************************************************
-// void PongThread (UdpSocket &udpSocket, std::string ipAddr, std::string sendToPort) {
-//   uint8_t buffer[200];
-
-//   printf ("Pong Thread started %s %s\n", ipAddr.c_str(), sendToPort.c_str());
-
-//   if (ipAddr.empty() || sendToPort.empty())
-//     return;
-
-//   bool running {true};
-//   while (running) {
-//     printf ("Pong calling RecvFrom\n");
-//     int rval = udpSocket.RecvFrom(buffer, sizeof(buffer), ipAddr, sendToPort);
-//     if (rval > 0) {
-//        buffer[rval] = 0;
-//        printf("Pong: '%s'\n", buffer);
-// #if 0       
-//        if (udpSocket.SendTo(buffer, rval) <= 0) {
-//          printf ("Pong failed to send %s\n", strerror(errno));
-//          running = false;
-//        }
-// #endif       
-//      } else {
-//         printf ("Pong failed to receive: %s\n", strerror(errno));
-//         running = false;
-//      }
-//      if (std::string((char*)buffer) == std::string("stop")) {
-//         printf ("Pong received stop signal\n");
-//         running = false;
-//      }
-     
-//   }
-//   udpSocket.Shutdown(SHUT_RDWR);
-//   printf ("Pong Thread Exiting\n");
-// }
