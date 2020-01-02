@@ -11,13 +11,14 @@
 #include "UdpSocket.h"
 #include "time.h"
 
-static void UdpServerThread (UdpSocket &newSocket);
-
-
+static void UdpServerThread (UdpSocket &newSocket, std::string ipAddr, std::string responsePort);
 
 class PingPongTest {
 public:
-    PingPongTest() {};
+    PingPongTest( int iterations,  std::string serverIp,  std::string serverPort) :
+      mIterations{iterations}, mServerIp{serverIp} ,mServerPort{serverPort} {
+
+    };
     ~PingPongTest(){};
     
 
@@ -72,9 +73,15 @@ public:
             printf ("TIMEOUT\n");
           }
       } else {
+      if (mIterations == counter)  {
+        std::string msg = "stop";
+        udpSocket.SendTo(msg.c_str(), msg.size(), mServerIp, mServerPort);
+        break;
+      }
+        
       std::string msg = "UDP TX # " + std::to_string(counter);
       printf ("%s\n", msg.c_str());
-      if (udpSocket.SendTo(msg.c_str(), msg.size())< 0) {
+      if (udpSocket.SendTo(msg.c_str(), msg.size(), mServerIp, mServerPort)< 0) {
         fprintf (stderr,"Udp Failed to send packet %s\n", strerror(errno));
         running = false;
       } else {
@@ -84,6 +91,7 @@ public:
       }
     }
   }
+  printf ("main thread exiting\n");
 }
 
  void RunPingPongTest(UdpSocket &udpSocket) {
@@ -95,6 +103,10 @@ public:
  }
 
 protected:
+  int mIterations;
+  std::string mServerIp;
+  std::string mServerPort;
+
   std::mutex mMutex;
   std::vector<std::string> mMQ{};
   bool mDebug {false};
@@ -106,17 +118,26 @@ protected:
 // main
 //*****************************************************
 int main() {
-  std::string ipAddr("localhost");
-  std::string port("8900");
+  std::string serverIp("localhost");
+  std::string serverPort("8900");
+  
+  std::string responseIp ("localhost");
+  std::string responsePort("8901");
+  
   UdpSocket udpSocket;
   udpSocket.EnableDebug(false);
-  udpSocket.Bind (ipAddr, port);
   
-  std::thread udpServerThread (UdpServerThread, std::ref(udpSocket));
-  
-  PingPongTest pingpong;
+  udpSocket.Bind (serverIp, serverPort);
 
-  pingpong.RunPingPongTest(udpSocket);
+  UdpSocket udpReponse; 
+  udpReponse.Bind (responseIp, responsePort);
+
+  
+  std::thread udpServerThread (UdpServerThread, std::ref(udpSocket), responseIp, responsePort);
+  
+  PingPongTest pingpong (100, serverIp, serverPort);
+
+  pingpong.RunPingPongTest(udpReponse);
 
   udpServerThread.join();
   
@@ -126,10 +147,10 @@ int main() {
 
 
 //*****************************************************
-// PingThread
+// UdpServerThread
 //*****************************************************
-void UdpServerThread (UdpSocket &udpSocket) {
-  uint8_t buffer[200];
+void UdpServerThread (UdpSocket &udpSocket, std::string responseIp, std::string responsePort) {
+  char buffer[200];
   printf ("Udp Server Thread started\n");
   bool running {true};
 
@@ -137,8 +158,12 @@ void UdpServerThread (UdpSocket &udpSocket) {
     int rval = udpSocket.RecvFrom(buffer, sizeof(buffer));
     if (rval > 0) {
        buffer[rval] = 0;
+       if (std::string(buffer) == std::string("stop")){
+         break;
+       }
+
        printf("SRVR UDP ECHO: '%s'\n", buffer);
-       int status = udpSocket.Reply(buffer, rval);
+       int status = udpSocket.SendTo(buffer, rval, responseIp, responsePort);
        if (status < 0) {
          printf ("UDP TX failed: %s\n", strerror(errno));
        }
