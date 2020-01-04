@@ -15,7 +15,7 @@
 //*****************************************************
 // UdpSocket::UdpSocket
 //*****************************************************
-UdpSocket::UdpSocket() : Socket(AF_INET, SOCK_DGRAM) {
+UdpSocket::UdpSocket() : Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) {
   if (mDebug) printf ("%s\n", __func__);
   Socket::Open();
   std::memset(&mLastReceivedAddr, 0, sizeof(mLastReceivedAddr));
@@ -36,6 +36,7 @@ UdpSocket::UdpSocket (const UdpSocket& sock) :  Socket(sock) {
 //*****************************************************
 UdpSocket::~UdpSocket() {
   if (mDebug) printf ("%s\n", __func__);
+  Close();
 }
 
 
@@ -68,9 +69,9 @@ int UdpSocket::Bind(std::string ipAddr, std::string port) {
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           printf("BIND IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
-               Family(rp->ai_family).c_str(), 
-               Type(rp->ai_socktype).c_str(), 
-               Protocol(rp->ai_protocol).c_str()
+               FamilyToString(rp->ai_family).c_str(), 
+               TypeToString(rp->ai_socktype).c_str(), 
+               ProtocolToString(rp->ai_protocol).c_str()
                );
       }
    }
@@ -125,9 +126,9 @@ int UdpSocket::SendTo(const uint8_t* buf, size_t len, std::string ipAddr, std::s
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           if (mDebug) printf("SENDTO IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
-               Family(rp->ai_family).c_str(), 
-               Type(rp->ai_socktype).c_str(), 
-               Protocol(rp->ai_protocol).c_str()
+               FamilyToString(rp->ai_family).c_str(), 
+               TypeToString(rp->ai_socktype).c_str(), 
+               ProtocolToString(rp->ai_protocol).c_str()
                );
       }
    }
@@ -187,9 +188,9 @@ int UdpSocket::RecvFrom( uint8_t* buf, size_t len, std::string ipAddr, std::stri
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           if (mDebug) printf("RECVFROM IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
-               Family(rp->ai_family).c_str(), 
-               Type(rp->ai_socktype).c_str(), 
-               Protocol(rp->ai_protocol).c_str()
+               FamilyToString(rp->ai_family).c_str(), 
+               TypeToString(rp->ai_socktype).c_str(), 
+               ProtocolToString(rp->ai_protocol).c_str()
                );
       }
    }

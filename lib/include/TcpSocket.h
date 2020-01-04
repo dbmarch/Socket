@@ -26,6 +26,27 @@ public:
   int Recv( uint8_t * buf, size_t len);
   int Recv( char * buf, size_t len);
 
+/* 
+  * Timed Receive
+  * @param buf   Buffer made of unsigned bytes
+  * @param len   Buffer Size
+  * @param t     wait time
+  * @return 0 for timeout, -1 for error, # for bytes received
+  * 
+  * @return vectors are updated with the only the sockets that have activity (Same as select)
+  */
+  int Recv (uint8_t* buf, size_t len, timeval &t);   
+/* 
+  * Timed Receive
+  * @param buf   Buffer made of char array
+  * @param len   Buffer Size
+  * @param t     wait time
+  * @return 0 for timeout, -1 for error, # for bytes received
+  * 
+  * @return vectors are updated with the only the sockets that have activity (Same as select)
+  */
+  int Recv (char* buf, size_t len, timeval &t);   
+
   int Send( const uint8_t * buf, size_t len);
   int Send( const char*  buf, size_t len);
   int Send(const std::string msg);

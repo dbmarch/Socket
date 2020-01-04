@@ -5,14 +5,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include "Socket.h"
 
 
 //*****************************************************
 // Socket::Socket
 //*****************************************************
-Socket::Socket(int family, int type) :
-  mFamily(family), mType (type) {
+Socket::Socket(int family, int type, int protocol) :
+  mFamily(family), mType (type), mProtocol(protocol) {
   if (mDebug) printf ("%s\n", __func__);
 }
 
@@ -31,7 +32,6 @@ Socket::Socket (const Socket& sock) {
 //*****************************************************
 Socket::~Socket() {
   if (mDebug) printf ("%s\n", __func__);
-  Close();    // Make sure its closed
 }
 
 //*****************************************************
@@ -56,6 +56,7 @@ int Socket::Open(void) {
 // Socket::Close
 //*****************************************************
 int Socket::Close(void) {	
+  if (mDebug) printf ("Closing %d\n",sockId);
   int closeId {sockId};
   if (sockId != -1) {
     sockId = -1;
@@ -103,11 +104,75 @@ int Socket::GetSockOpt (int level, int optname, void* optval, socklen_t *optlen)
   return status;
 }
 
+//*****************************************************
+// Socket::GetSockOpt
+//*****************************************************
+int Socket::Select (std::vector<Socket> *readSockList, std::vector<Socket> *writeSockList, std::vector<Socket> *exceptSockList, struct timeval & timeout) {
+  fd_set rfds, wfds, efds;
+  int nfds{0}; // 1 more than the maximum of any file descriptor in the set.
+
+  // Clear them
+  FD_ZERO (&rfds);
+  FD_ZERO (&wfds);
+  FD_ZERO (&efds);
+
+  // load our socket ids
+  if (readSockList) {
+    for (auto const& socket : *readSockList) {
+       FD_SET (socket.SockId(), &rfds);
+       nfds = socket.SockId() > nfds ? socket.SockId() : nfds;
+    }
+  }
+  if(writeSockList) {
+    for (auto const & socket : *writeSockList) {
+       FD_SET (socket.SockId(), &wfds);
+       nfds = socket.SockId() > nfds ? socket.SockId() : nfds;
+    }
+  }
+
+  if(exceptSockList) {
+    for (auto const & socket : *exceptSockList) {
+       FD_SET (socket.SockId(), &efds);
+       nfds = socket.SockId() > nfds ? socket.SockId() : nfds;
+    }
+  }
+  ++ nfds;
+   
+  // int status = select (nfds, &rfds, &wfds, &efds, &timeout);
+  int status = select (nfds, &rfds, nullptr, nullptr, &timeout);
+  if (status <= 0) {
+    return status;
+  } else {
+    if (readSockList) {
+      for (auto socket = readSockList->begin() ; socket != readSockList->end() ; ++socket) {
+         if (!FD_ISSET (socket->SockId(), &rfds)){
+            readSockList->erase(socket);
+         } 
+      }
+    }
+    if (writeSockList) {
+      for (auto socket = writeSockList->begin() ; socket != writeSockList->end() ; ++socket) {
+         if (!FD_ISSET (socket->SockId(), &wfds)) {
+           writeSockList->erase(socket);
+         }
+      }
+    }
+    if (exceptSockList) {
+      for (auto socket = exceptSockList->begin() ; socket != exceptSockList->end() ; ++socket) {
+         if (!FD_ISSET (socket->SockId(), &efds)) {
+           exceptSockList->erase(socket);
+         }
+      }
+    }
+  }
+  return status;
+}
+
 
 //*****************************************************
 // Socket::IpToString
 //*****************************************************
-std::string Socket::IpToString (const struct sockaddr * sa) {
+std::string Socket::IpToString (const struct sockaddr * sa) const {
   char ipBuf[INET_ADDRSTRLEN];
   std::string result{};
   switch (sa->sa_family)   {
@@ -134,8 +199,8 @@ std::string Socket::IpToString (const struct sockaddr * sa) {
 //*****************************************************
 // Socket::Family
 //*****************************************************
-std::string Socket::Family(int otherFamily) {
-  int family = otherFamily == -1 ? mFamily : otherFamily;
+std::string Socket::FamilyToString(int family) const {
+
   switch (family)   {
     case AF_INET:  return std::string ("AF_INET");
     case AF_INET6: return std::string ("AF_INET6");
@@ -149,8 +214,7 @@ std::string Socket::Family(int otherFamily) {
 //*****************************************************
 // Socket::Type
 //*****************************************************
-std::string Socket::Type(int otherType) {
-  int type = otherType == -1 ? mType : otherType;
+std::string Socket::TypeToString(int type) const {
   switch (type)   {
     case SOCK_STREAM: return std::string ("SOCK_STREAM");
     case SOCK_DGRAM:  return std::string ("SOCK_DGRAM");
@@ -164,7 +228,7 @@ std::string Socket::Type(int otherType) {
 //*****************************************************
 // Socket::Protocol
 //*****************************************************
-std::string Socket::Protocol(int protocol) {
+std::string Socket::ProtocolToString (int protocol) const {
   switch (protocol) {
     case IPPROTO_IP:    return std::string ("IPPROTO_IP");
     case IPPROTO_ICMP:  return std::string ("IPPROTO_ICMP");

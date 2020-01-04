@@ -1,3 +1,4 @@
+#include <functional>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -13,7 +14,7 @@
 //*****************************************************
 // TcpSocket::TcpSocket
 //*****************************************************
-TcpSocket::TcpSocket() :  Socket(AF_INET, SOCK_STREAM) {
+TcpSocket::TcpSocket() :  Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) {
   if (mDebug) printf ("%s\n", __func__);
   Socket::Open();
   peer_addr.sa_family = AF_UNSPEC;
@@ -31,6 +32,7 @@ TcpSocket::TcpSocket (const TcpSocket& sock) :  Socket(sock) {
 //*****************************************************
 TcpSocket::~TcpSocket() {
   if (mDebug) printf ("%s\n", __func__);
+  Close();
 }
 
 //*****************************************************
@@ -59,9 +61,9 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           printf("BIND IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
-               Family(rp->ai_family).c_str(), 
-               Type(rp->ai_socktype).c_str(), 
-               Protocol(rp->ai_protocol).c_str()
+               FamilyToString(rp->ai_family).c_str(), 
+               TypeToString(rp->ai_socktype).c_str(), 
+               ProtocolToString(rp->ai_protocol).c_str()
                );
       }
    }
@@ -127,9 +129,9 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
       for (rp = result; rp != NULL; rp = rp->ai_next) {     
           printf("CONNECT IP:%s %s %s %s\n", 
                IpToString(rp->ai_addr).c_str(),
-               Family(rp->ai_family).c_str(), 
-               Type(rp->ai_socktype).c_str(), 
-               Protocol(rp->ai_protocol).c_str()
+               FamilyToString(rp->ai_family).c_str(), 
+               TypeToString(rp->ai_socktype).c_str(), 
+               ProtocolToString(rp->ai_protocol).c_str()
                );
       }
    }
@@ -210,6 +212,32 @@ int TcpSocket::Recv( uint8_t * buf, size_t len) {
     }
    return (status);
 }
+
+//*****************************************************
+// TcpSocket::Recv
+//*****************************************************
+int TcpSocket::Recv( char * buf, size_t len, timeval &t) { 
+   return Recv( reinterpret_cast<uint8_t*>(buf), len, t);
+}
+
+//*****************************************************
+// TcpSocket::Recv
+//*****************************************************
+int TcpSocket::Recv( uint8_t * buf, size_t len, timeval &t) { 
+  std::vector<Socket> readSockList;
+  Socket& s = std::ref(*static_cast<Socket*>(this));
+  readSockList.push_back(s);
+  int status = Socket::Select(&readSockList, nullptr, nullptr, t);
+  if (status > 0) {
+    status = recv (sockId, buf, len, 0);
+     if (status < 0) {
+          fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
+      }
+  }
+   return (status);
+}
+
+
 
 
 //*****************************************************

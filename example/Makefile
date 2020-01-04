@@ -11,13 +11,16 @@ SERVER4_EXE := Server4
 
 UDPPINGPONG_EXE := UdpPingPong
 
+SERVERSELECT_EXE := ServerSelect
+
 TARGET      :=   \
 	$(CLIENT_EXE)  \
 	$(SERVER_EXE)  \
 	$(SERVER2_EXE) \
 	$(SERVER3_EXE) \
 	$(SERVER4_EXE) \
-	$(UDPPINGPONG_EXE)
+	$(UDPPINGPONG_EXE) \
+	$(SERVERSELECT_EXE)
 
 OBJ_CLIENT  := obj/Client.o
 
@@ -26,6 +29,7 @@ OBJ_SERVER2  := obj/Server2.o
 OBJ_SERVER3  := obj/Server3.o
 OBJ_SERVER4  := obj/Server4.o
 OBJ_UDPPINGPONG := obj/UdpPingPong.o
+OBJ_SERVERSELECT := obj/ServerSelect.o
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := src
@@ -94,6 +98,8 @@ $(SERVER4_EXE): $(OBJECTS)
 $(UDPPINGPONG_EXE): $(OBJECTS)
 	$(CC) -o $(TARGETDIR)/$(UDPPINGPONG_EXE) $(OBJ_UDPPINGPONG) $(LIB)
 
+$(SERVERSELECT_EXE): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(SERVERSELECT_EXE) $(OBJ_SERVERSELECT) $(LIB)
 
 
 #Compile
