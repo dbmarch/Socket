@@ -27,6 +27,7 @@ public:
 
   void EnableDebug (bool enableIt) { Socket::EnableDebug(enableIt); }
 
+  
 
 protected:
   std::string mIpAddr{};              // Use this if we don't supply an ip

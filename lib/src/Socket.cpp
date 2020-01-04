@@ -178,12 +178,39 @@ std::string Socket::IpToString (const struct sockaddr * sa) const {
   switch (sa->sa_family)   {
     case AF_INET:
       inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),ipBuf, sizeof(ipBuf));
-      result = std::string(ipBuf) + std::string(":") + std::to_string(htons(((struct sockaddr_in *)sa)->sin_port));
+      result = std::string(ipBuf);
       break;
 
     case AF_INET6:
       inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr),ipBuf, sizeof(ipBuf));
-      result = std::string(ipBuf) + std::string(":") + std::to_string(htons(((struct sockaddr_in6 *)sa)->sin6_port));
+      result = std::string(ipBuf);
+      break;
+
+    case AF_UNSPEC:
+      result = std::string("NONE");
+      break;
+
+    default:
+      result = std::string("???");
+  }
+  return result;
+}
+
+
+//*****************************************************
+// Socket::IpToString
+//*****************************************************
+std::string Socket::AddrToString (const struct sockaddr * sa) const {
+  std::string ip = IpToString(sa);
+
+  std::string result{};
+  switch (sa->sa_family)   {
+    case AF_INET:
+      result = ip + std::string(":") + std::to_string(htons(((struct sockaddr_in *)sa)->sin_port));
+      break;
+
+    case AF_INET6:
+      result = ip + std::string(":") + std::to_string(htons(((struct sockaddr_in6 *)sa)->sin6_port));
       break;
 
     case AF_UNSPEC:

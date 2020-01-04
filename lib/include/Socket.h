@@ -47,6 +47,8 @@ public:
   int Protocol() const {return mProtocol; }
 
   std::string IpToString (const struct sockaddr * sa) const;
+  std::string AddrToString (const struct sockaddr * sa) const;
+
   std::string FamilyToString (int family ) const;
   std::string TypeToString (int type ) const;      // default to our socket type
   std::string ProtocolToString (int protocol ) const;

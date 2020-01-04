@@ -52,6 +52,10 @@ public:
   int Send(const std::string msg);
 
   void EnableDebug (bool enableIt) { Socket::EnableDebug(enableIt); }
+
+  sockaddr    GetPeerSockAddr() const {return peer_addr;}
+  std::string GetPeerIp() const { return IpToString(&peer_addr); }
+
 protected:
 
   void AcceptedSocket(int sockId);

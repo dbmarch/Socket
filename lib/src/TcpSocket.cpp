@@ -265,5 +265,3 @@ int TcpSocket::Send(const std::string msg) {
   uint8_t* pMsg = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(msg.c_str()));
   return Send(pMsg, msg.length());
 }
-
-
