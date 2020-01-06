@@ -64,9 +64,8 @@ void AcceptThread( std::string name, TcpSocket &listenSocket, ReceiveFunction re
   printf ("AcceptThread started...%s\n", name.c_str());
   while (1)
   {
-    std::vector<Socket> readSockList;
-    Socket& s = std::ref(listenSocket);
-    readSockList.push_back(s);
+    std::vector<Socket*> readSockList;
+    readSockList.push_back(&listenSocket);
     timeval t;
     t.tv_sec = 3;
     t.tv_usec = 0;

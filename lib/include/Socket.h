@@ -9,7 +9,6 @@
 class Socket {
 public:
   Socket(int domain, int type, int protocol);
-  Socket (const Socket& sock);
 
   virtual ~Socket();
 
@@ -38,10 +37,10 @@ public:
   * 
   * @return vectors are updated with the only the sockets that have activity (Same as select)
   */
-  static int Select ( std::vector<Socket> *readfds, std::vector<Socket> *writefds, std::vector<Socket> *exceptfds, struct timeval & timeout);
+  static int Select ( std::vector<Socket*> *readfds, std::vector<Socket*> *writefds, std::vector<Socket*> *exceptfds, struct timeval & timeout);
 
 
-  int SockId () const  { return sockId; }
+  int SockId () const  { return mSocket; }
   int Family() const   { return mFamily; }
   int Type () const    { return mType; }
   int Protocol() const {return mProtocol; }
@@ -54,7 +53,7 @@ public:
   std::string ProtocolToString (int protocol ) const;
 
   protected:
-    int sockId{-1};
+    int mSocket{-1};
 
     int mFamily{AF_INET};
 
@@ -63,6 +62,10 @@ public:
     int mProtocol { IPPROTO_IP };
 
     bool mDebug{false};
+ 
+ private:
+   Socket (const Socket& s) = delete;
+
 };
 
 #endif

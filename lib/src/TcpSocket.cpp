@@ -23,8 +23,8 @@ TcpSocket::TcpSocket() :  Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) {
 //*****************************************************
 // TcpSocket::TcpSocket
 //*****************************************************
-TcpSocket::TcpSocket (const TcpSocket& sock) :  Socket(sock) {
-  peer_addr = sock.peer_addr;
+TcpSocket::TcpSocket (const TcpSocket& sock, int acceptedId) :  Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)  {
+  mSocket = acceptedId;
 }
 
 //*****************************************************
@@ -72,7 +72,7 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
 
    freeaddrinfo(result);
 
-   return bind(sockId, server.ai_addr, server.ai_addrlen);
+   return bind(mSocket, server.ai_addr, server.ai_addrlen);
   }
 
 
@@ -81,7 +81,7 @@ int TcpSocket::Bind(std::string ipAddr, std::string port) {
 //*****************************************************
 int TcpSocket::Listen (int backlog) {
   if (mDebug) printf ("%s\n", __func__);
-  return listen(sockId, backlog);
+  return listen(mSocket, backlog);
 }
 
 //*****************************************************
@@ -96,7 +96,7 @@ int TcpSocket::Connect( uint16_t port) {
   server.sin_port = htons( port );
 
 
-  if (connect(sockId, ( struct sockaddr *)&server , sizeof(server)) < 0) {
+  if (connect(mSocket, ( struct sockaddr *)&server , sizeof(server)) < 0) {
     fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
     return -1;
   }
@@ -141,7 +141,7 @@ int TcpSocket::Connect(std::string ipAddr, std::string port) {
 
    freeaddrinfo(result);
 
-  if (connect(sockId, server.ai_addr, server.ai_addrlen) < 0) {
+  if (connect(mSocket, server.ai_addr, server.ai_addrlen) < 0) {
     fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
     return -1;
   }
@@ -158,7 +158,7 @@ TcpSocket* TcpSocket::Accept (void) {
   if (mDebug) printf ("%s \n", __func__);
 
   peer_addr_size = sizeof(struct sockaddr);
-  int newSocket = accept(sockId, &peer_addr, &peer_addr_size);
+  int newSocket = accept(mSocket, &peer_addr, &peer_addr_size);
 
   if (newSocket == -1)
   {
@@ -166,8 +166,7 @@ TcpSocket* TcpSocket::Accept (void) {
     return nullptr;
   }
 
-  TcpSocket *sock = new TcpSocket(*this);
-  sock->AcceptedSocket(newSocket);
+  TcpSocket *sock = new TcpSocket(*this, newSocket);
 
   printf ("Connected to %s\n", IpToString(&peer_addr).c_str());
   return sock ;
@@ -183,18 +182,6 @@ std::string TcpSocket::GetPeerAddr() {
 }
 
 
-
-
-
-
-//*****************************************************
-// TcpSocket::AcceptedSocket
-//*****************************************************
-void TcpSocket::AcceptedSocket(int acceptedId) {
-  sockId = acceptedId;
-}
-
-
 //*****************************************************
 // TcpSocket::Recv
 //*****************************************************
@@ -206,7 +193,7 @@ int TcpSocket::Recv( char * buf, size_t len) {
 // TcpSocket::Recv
 //*****************************************************
 int TcpSocket::Recv( uint8_t * buf, size_t len) { 
-  int status = recv (sockId, buf, len, 0);
+  int status = recv (mSocket, buf, len, 0);
    if (status < 0) {
         fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
@@ -224,12 +211,11 @@ int TcpSocket::Recv( char * buf, size_t len, timeval &t) {
 // TcpSocket::Recv
 //*****************************************************
 int TcpSocket::Recv( uint8_t * buf, size_t len, timeval &t) { 
-  std::vector<Socket> readSockList;
-  Socket& s = std::ref(*static_cast<Socket*>(this));
-  readSockList.push_back(s);
+  std::vector<Socket*> readSockList;
+  readSockList.push_back(this);
   int status = Socket::Select(&readSockList, nullptr, nullptr, t);
   if (status > 0) {
-    status = recv (sockId, buf, len, 0);
+    status = recv (mSocket, buf, len, 0);
      if (status < 0) {
           fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
       }
@@ -251,7 +237,7 @@ int TcpSocket::Send( const char * buf, size_t len) {
 // TcpSocket::Send
 //*****************************************************
 int TcpSocket::Send( const uint8_t * buf, size_t len) { 
-  int status = send (sockId, buf, len, 0);
+  int status = send (mSocket, buf, len, 0);
    if (status < 0) {
         fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }

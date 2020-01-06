@@ -1,5 +1,5 @@
-#ifndef __TCPSOCKET_H
-#define __TCPSOCKET_H
+#ifndef __UDPSOCKET_H
+#define __UDPSOCKET_H
 
 #include <string>
 #include <netinet/in.h>
@@ -9,7 +9,6 @@
 class UdpSocket : public Socket {
 public:
   UdpSocket();
-  UdpSocket (const UdpSocket& s);
 
   virtual ~UdpSocket();
 
@@ -35,6 +34,9 @@ protected:
   
   struct addrinfo mLastReceivedAddr;    // Use this for replying
   
+private: 
+   UdpSocket (const UdpSocket& s) = delete;
+
 };
 
 #endif

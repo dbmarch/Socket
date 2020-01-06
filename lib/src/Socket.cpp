@@ -19,15 +19,6 @@ Socket::Socket(int family, int type, int protocol) :
 
 
 //*****************************************************
-// Socket::Socket
-//*****************************************************
-Socket::Socket (const Socket& sock) {
-  sockId = sock.sockId;
-  mFamily = sock.mFamily;
-  mType = sock.mType;
-}
-
-//*****************************************************
 // Socket::~Socket
 //*****************************************************
 Socket::~Socket() {
@@ -39,12 +30,12 @@ Socket::~Socket() {
 //*****************************************************
 int Socket::Open(void) {	
   if (mDebug) printf ("%s\n", __func__);
-  sockId = socket(mFamily, mType, 0);
-  if (sockId < 0) 
-    return sockId;
+  mSocket = socket(mFamily, mType, 0);
+  if (mSocket < 0) 
+    return mSocket;
 
   int optVal = 1;
-  if (setsockopt(sockId, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof (int)) < 0 ) { //You can reuse the address and the port
+  if (setsockopt(mSocket, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof (int)) < 0 ) { //You can reuse the address and the port
     fprintf (stderr,"set socket option failed %s\n", strerror(errno));
   }
 
@@ -56,10 +47,10 @@ int Socket::Open(void) {
 // Socket::Close
 //*****************************************************
 int Socket::Close(void) {	
-  if (mDebug) printf ("Closing %d\n",sockId);
-  int closeId {sockId};
-  if (sockId != -1) {
-    sockId = -1;
+  if (mDebug) printf ("Closing %d\n",mSocket);
+  int closeId {mSocket};
+  if (mSocket != -1) {
+    mSocket = -1;
     return close(closeId);  // shutdown is preferred..
   }
   return 0;
@@ -70,7 +61,7 @@ int Socket::Close(void) {
 // Socket::Shutdown 
 //*****************************************************
 int Socket::Shutdown(int how) {	
-  return shutdown(sockId, how);
+  return shutdown(mSocket, how);
 }
 
 
@@ -86,7 +77,7 @@ void Socket::EnableDebug(bool enableIt) {
 // Socket::SetSockOpt
 //*****************************************************
 int Socket::SetSockOpt (int level, int optname, const void* optval, socklen_t optlen) {
-    int status = setsockopt (sockId, level, optname, optval, optlen);
+    int status = setsockopt (mSocket, level, optname, optval, optlen);
     if (status < 0) {
         fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
@@ -97,7 +88,7 @@ int Socket::SetSockOpt (int level, int optname, const void* optval, socklen_t op
 // Socket::GetSockOpt
 //*****************************************************
 int Socket::GetSockOpt (int level, int optname, void* optval, socklen_t *optlen) {
-    int status = getsockopt (sockId, level, optname, optval, optlen);
+    int status = getsockopt (mSocket, level, optname, optval, optlen);
     if (status < 0) {
         fprintf(stderr,"%s error: %s\n", __func__,strerror(errno));
     }
@@ -107,7 +98,7 @@ int Socket::GetSockOpt (int level, int optname, void* optval, socklen_t *optlen)
 //*****************************************************
 // Socket::GetSockOpt
 //*****************************************************
-int Socket::Select (std::vector<Socket> *readSockList, std::vector<Socket> *writeSockList, std::vector<Socket> *exceptSockList, struct timeval & timeout) {
+int Socket::Select (std::vector<Socket*> *readSockList, std::vector<Socket*> *writeSockList, std::vector<Socket*> *exceptSockList, struct timeval & timeout) {
   fd_set rfds, wfds, efds;
   int nfds{0}; // 1 more than the maximum of any file descriptor in the set.
 
@@ -119,21 +110,21 @@ int Socket::Select (std::vector<Socket> *readSockList, std::vector<Socket> *writ
   // load our socket ids
   if (readSockList) {
     for (auto const& socket : *readSockList) {
-       FD_SET (socket.SockId(), &rfds);
-       nfds = socket.SockId() > nfds ? socket.SockId() : nfds;
+       FD_SET (socket->SockId(), &rfds);
+       nfds = socket->SockId() > nfds ? socket->SockId() : nfds;
     }
   }
   if(writeSockList) {
     for (auto const & socket : *writeSockList) {
-       FD_SET (socket.SockId(), &wfds);
-       nfds = socket.SockId() > nfds ? socket.SockId() : nfds;
+       FD_SET (socket->SockId(), &wfds);
+       nfds = socket->SockId() > nfds ? socket->SockId() : nfds;
     }
   }
 
   if(exceptSockList) {
     for (auto const & socket : *exceptSockList) {
-       FD_SET (socket.SockId(), &efds);
-       nfds = socket.SockId() > nfds ? socket.SockId() : nfds;
+       FD_SET (socket->SockId(), &efds);
+       nfds = socket->SockId() > nfds ? socket->SockId() : nfds;
     }
   }
   ++ nfds;
@@ -145,21 +136,21 @@ int Socket::Select (std::vector<Socket> *readSockList, std::vector<Socket> *writ
   } else {
     if (readSockList) {
       for (auto socket = readSockList->begin() ; socket != readSockList->end() ; ++socket) {
-         if (!FD_ISSET (socket->SockId(), &rfds)){
+         if (!FD_ISSET ((*socket)->SockId(), &rfds)){
             readSockList->erase(socket);
          } 
       }
     }
     if (writeSockList) {
       for (auto socket = writeSockList->begin() ; socket != writeSockList->end() ; ++socket) {
-         if (!FD_ISSET (socket->SockId(), &wfds)) {
+         if (!FD_ISSET ((*socket)->SockId(), &wfds)) {
            writeSockList->erase(socket);
          }
       }
     }
     if (exceptSockList) {
       for (auto socket = exceptSockList->begin() ; socket != exceptSockList->end() ; ++socket) {
-         if (!FD_ISSET (socket->SockId(), &efds)) {
+         if (!FD_ISSET ((*socket)->SockId(), &efds)) {
            exceptSockList->erase(socket);
          }
       }

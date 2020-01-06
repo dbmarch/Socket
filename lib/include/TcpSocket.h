@@ -8,8 +8,8 @@
 class TcpSocket : public Socket {
 public:
   TcpSocket();
-  TcpSocket (const TcpSocket& s);
-
+  TcpSocket (const TcpSocket& sock, int acceptedId) ; // Constructor when we accept a socket.
+  
   virtual ~TcpSocket();
 
   int Connect( std::string ipAddr, std::string port);
@@ -58,9 +58,10 @@ public:
 
 protected:
 
-  void AcceptedSocket(int sockId);
-
   struct sockaddr peer_addr;
+
+private:
+  TcpSocket (const TcpSocket& s) = delete;
 
 };
 

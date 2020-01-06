@@ -23,15 +23,6 @@ UdpSocket::UdpSocket() : Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) {
 
 
 //*****************************************************
-// UdpSocket::UdpSocket
-//*****************************************************
-UdpSocket::UdpSocket (const UdpSocket& sock) :  Socket(sock) {
-  std::memcpy(&mLastReceivedAddr, &sock.mLastReceivedAddr, sizeof(mLastReceivedAddr));
-  mIpAddr = sock.mIpAddr;
-  mPort = sock.mPort;
-}
-
-//*****************************************************
 // UdpSocket::~UdpSocket
 //*****************************************************
 UdpSocket::~UdpSocket() {
@@ -80,7 +71,7 @@ int UdpSocket::Bind(std::string ipAddr, std::string port) {
 
    freeaddrinfo(result);
 
-   return bind(sockId, server.ai_addr, server.ai_addrlen);
+   return bind(mSocket, server.ai_addr, server.ai_addrlen);
   }
 
 
@@ -138,7 +129,7 @@ int UdpSocket::SendTo(const uint8_t* buf, size_t len, std::string ipAddr, std::s
 
    freeaddrinfo(result);
 
-  int rval = sendto(sockId,  buf, len, 0, fromAddr.ai_addr, fromAddr.ai_addrlen);
+  int rval = sendto(mSocket,  buf, len, 0, fromAddr.ai_addr, fromAddr.ai_addrlen);
   if (rval < 0) {
     fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
   }
@@ -200,7 +191,7 @@ int UdpSocket::RecvFrom( uint8_t* buf, size_t len, std::string ipAddr, std::stri
 
    freeaddrinfo(result);
   
-  int rval = recvfrom(sockId,  buf, len, 0, fromAddr.ai_addr, &fromAddr.ai_addrlen);
+  int rval = recvfrom(mSocket,  buf, len, 0, fromAddr.ai_addr, &fromAddr.ai_addrlen);
   if ( rval < 0) {
     fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
   } else{
@@ -231,7 +222,7 @@ int UdpSocket::Reply(const uint8_t* buf, size_t len) {
      return -1;
 
    }
-  int rval = sendto(sockId,  buf, len, 0, mLastReceivedAddr.ai_addr, mLastReceivedAddr.ai_addrlen);
+  int rval = sendto(mSocket,  buf, len, 0, mLastReceivedAddr.ai_addr, mLastReceivedAddr.ai_addrlen);
   if (rval < 0) {
     fprintf (stderr, "%s failed: %s\n", __func__, strerror(errno));
   }
